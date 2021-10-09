@@ -74,8 +74,11 @@ And that is exactly the first thing that you will do!
 1.1 Out of the 7 datasets available in the `datateachr` package, choose **4** that appeal to you based on their description. Write your choices below:
 
 > **1: steam\_games**
+
 > **2: cancer\_sample**
+
 > **3: vancouver\_trees**
+
 > **4: flow\_sample**
 
 ## Exploring the chosen datasets
@@ -237,6 +240,7 @@ data.frame(rbind(dim(vancouver_trees),  # Create a data frame with the dimension
 1.4 Time for the final decision! Going back to the beginning, it's important to have an *end goal* in mind. For example, if I had chosen the `titanic` dataset for my project, I might've wanted to explore the relationship between survival and other variables. Try to think of 1 research question that you would want to answer with each dataset. Note them down below, and make your final choice based on what seems more interesting to you!
 
 > **vancouver\_trees**: Which species has the tallest trees?
+
 > **steam\_games**: What is the average discount price in videogames?
 
 # Important note
@@ -386,8 +390,11 @@ steam_games_modified %>%
 So far, you have chosen a dataset and gotten familiar with it through exploring the data. Now it's time to figure out 4 research questions that you would like to answer with your data! Write the 4 questions and any additional comments at the end of this deliverable. These questions are not necessarily set in stone - TAs will review them and give you feedback; therefore, you may choose to pursue them as they are for the rest of the project, or make modifications!
 
 > **Research question 1:** Do recent released games have better reviews than the older ones?
+
 > **Research question 2:** Are games with better reviews the most expensive ones?
+
 > **Research question 3:** Are the most popular games (i.e. games with more reviews) the ones with the best overall review?
+
 > **Research question 4:** Which developer produces the most popular games (i.e games with more reviews) or the ones with the best reviews?
 
 ### Attribution
