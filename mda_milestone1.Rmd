@@ -241,9 +241,9 @@ steam_games_modified %>%
 
 So far, you have chosen a dataset and gotten familiar with it through exploring the data. Now it's time to figure out 4 research questions that you would like to answer with your data! Write the 4 questions and any additional comments at the end of this deliverable. These questions are not necessarily set in stone - TAs will review them and give you feedback; therefore, you may choose to pursue them as they are for the rest of the project, or make modifications!
 
->**Research question 1:** Do recent released games have better reviews than the older ones?  
-**Research question 2:** Are games with better reviews the most expensive ones?  
-**Research question 3:** Are the most popular games (i.e. games with more reviews) the ones with the best overall review?  
+>**Research question 1:** Do recent released games have better reviews than the older ones?   
+**Research question 2:** Are games with better reviews the most expensive ones?   
+**Research question 3:** Are the most popular games (i.e. games with more reviews) the ones with the best overall review?   
 **Research question 4:** Which developer produces the most popular games (i.e games with more reviews) or the ones with the best reviews?  
 
 
