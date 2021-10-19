@@ -14,6 +14,7 @@ library(lubridate)
 library(knitr)
 library(scales)
 library(forcats)
+library(ggridges)
 ```
 
 # Task 1: Process and summarize the data (15 points)
@@ -108,8 +109,9 @@ steam_games_q1 = (steam_games_q1 %>%
                               (str_split(steam_games_q1$all_reviews, pattern = ",", simplify = TRUE) %>% #separate the content of all_reviews using commas
                                  as_tibble()%>% #Convert the matrix output to a tibble
                                  select(V1)) %>% #Select only the first column that stores the category of the overall review
-                                rename( all_reviews_category= V1)) #Rename the variable to a more informative name
-         ) 
+                                rename( all_reviews_category= V1)) %>%  #Rename the variable to a more informative name
+                    mutate(all_reviews_category = factor(all_reviews_category)) #Make the categories a factor 
+                  ) 
 ```
 
 Then, I will explore the frequencies of the review categories to decide which number I will assign to each category
@@ -132,12 +134,27 @@ table(steam_games_q1$all_reviews_category) %>% knitr::kable(format = "markdown",
 | Mixed                   |       4680|
 | Mostly Negative         |        782|
 | Mostly Positive         |       3311|
+| NaN                     |       2810|
 | Negative                |        135|
 | Overwhelmingly Negative |          7|
 | Overwhelmingly Positive |        321|
 | Positive                |       3551|
 | Very Negative           |         37|
 | Very Positive           |       4539|
+
+Finally, I will reorder the factors according to the correct order of categories, which is going to be useful in the future in case I want to plot.
+
+``` r
+steam_games_q1 = (steam_games_q1 %>% mutate(all_reviews_category = fct_relevel(all_reviews_category, "Overwhelmingly Positive",
+                                                                        "Very Positive",
+                                                                        "Positive",
+                                                                        "Mostly Positive",
+                                                                        "Mixed", 
+                                                                        "Mostly Negative",
+                                                                        "Negative",
+                                                                        "Very Negative",
+                                                                        "Overwhelmingly Negative")))
+```
 
 *2. Convert the review categories to a numerical value*
 
@@ -247,7 +264,7 @@ steam_games_q1 %>%
   guides(fill="none") #Remove the fill legends (non necessary)
 ```
 
-![](mda_milestone_2_files/figure-markdown_github/unnamed-chunk-6-1.png)
+![](mda_milestone_2_files/figure-markdown_github/unnamed-chunk-7-1.png)
 
 This task was helpful to answer my question (*Do recent released games have better reviews than the older ones?*) because, by dividing the games acoording to their release date in periods of 10 years, I could observe that there is a trend in old games to have better overall reviews than intermediate and new ones (which was contrary to what I was expecting). However, a further statistical analysis is needed to make a conclusion.
 
@@ -255,11 +272,60 @@ This task was helpful to answer my question (*Do recent released games have bett
 
 > Summarizing task: Compute the *range*, *mean*, and *two other summary statistics* of **one numerical variable** across the groups of **one categorical variable** from your data.\*
 
-For this research question, I will calculate the summary statistics of the price per category
+For this research question, I will calculate the summary statistics of the price per review category, to explore the distribution of prices. Since I need a column that contains the review category of each game, which was already done in the previous question, I will use `steam_games_q1` as my starting dataset.
 
-> Plotting task: Make a graph where it makes sense to customize the alpha transparency.
+``` r
+steam_games_q1 %>% 
+  filter(!is.na(original_price), #Remove the games that have NA in the original price
+         all_reviews_category %in% (steam_games_q1$all_reviews_category %>% 
+                                      table() %>% 
+                                      names())[1:9]) %>% #Remove the games that did not have enough reviews to have an overall review (discussed in Q1 - Extract vategories)
+  group_by(all_reviews_category) %>% 
+  summarise(mean_price = mean(original_price), #Compute the summary statistics
+            std_price = sd(original_price),
+            median_price = median(original_price),
+            min_price = min(original_price),
+            max_price = max(original_price)) %>% 
+  knitr::kable(format = "markdown")
+```
 
-To have a visual representation of the distribution of the variable that was summarized above, I decided to use a jitter plot, using alpha transparency to identify the distribution of the prices.
+| all\_reviews\_category  |  mean\_price|    std\_price|  median\_price|  min\_price|  max\_price|
+|:------------------------|------------:|-------------:|--------------:|-----------:|-----------:|
+| Overwhelmingly Positive |    14.886226|     30.185184|           9.99|        0.00|      501.87|
+| Very Positive           |    15.014226|     35.954507|           9.99|        0.00|      501.87|
+| Positive                |   201.936467|  11061.335331|           4.99|        0.00|   650560.00|
+| Mostly Positive         |    16.436775|     45.270922|           8.99|        0.00|      624.74|
+| Mixed                   |    16.025741|     51.907027|           5.99|        0.00|      624.74|
+| Mostly Negative         |    12.190993|     36.675383|           4.99|        0.00|      624.74|
+| Negative                |    10.335985|     17.196160|           4.99|        0.00|      110.61|
+| Very Negative           |    13.148387|     12.300908|           9.99|        0.99|       59.99|
+| Overwhelmingly Negative |     9.132857|      5.843189|           9.99|        0.99|       19.99|
+
+> Plotting task: Create a graph of your choosing, make one of the axes logarithmic, and format the axes labels so that they are "pretty" or easier to read
+
+To have a visual representation of the distribution of the variable that was summarized above (price) in each category and compare them, I decided to use the function `geom_density_ridges()`
+
+``` r
+steam_games_q1 %>% 
+  filter(!is.na(original_price), #Remove the games that have NA in the original price
+         all_reviews_category %in% (steam_games_q1$all_reviews_category %>% 
+                                      table() %>% 
+                                      names())[1:9]) %>% #Remove the games that did not have enough reviews to have an overall review (discussed in Q1 - Extract vategories) 
+  mutate(original_price = original_price + 1 ,
+         all_reviews_category = fct_rev(all_reviews_category)) %>% #Add 1 to the price to avoid infinite values when applying the log10 transformation
+  ggplot(aes(original_price, all_reviews_category))+
+  ggridges::geom_density_ridges(aes(fill = all_reviews_category), alpha = 0.4) +
+  scale_x_log10(labels = scales::label_dollar())+ #Add a log10 scale to the x axis
+  scale_y_discrete("")+ #Remove the y axis title (non necessary)
+  xlab("Original price")+
+  guides(fill = "none") 
+```
+
+    ## Picking joint bandwidth of 0.0996
+
+![](mda_milestone_2_files/figure-markdown_github/unnamed-chunk-9-1.png)
+
+This task provided information that helped me to explore my question. By looking at the density of each group, I can see that, overall, they all have a very similar distribution around similar prices. There are some categories, such as Overwhelmingly Negative, that have a slightly different shape, and a strong peak. I wonder if those differences are enough for its prices to be statistically different compared to any of the other categories when doing a proper statistical test.
 
 #### Q3: Are the most popular games (i.e. games with more reviews) the ones with the best overall review?
 
