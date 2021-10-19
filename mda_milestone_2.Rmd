@@ -1,0 +1,252 @@
+---
+title: "Mini Data Analysis Milestone 2"
+author: "Erick Navarro"
+date: "17/10/2021"
+output: github_document
+---
+The objective of this assignment is to explore the concept of tidy data and investigate further my research questions.  
+
+The first step will be loading the data and and the packages that will be used: 
+
+```{r, message = FALSE}
+library(datateachr) #This package contains the dataset steam_games, which is the one that I will use for this milestone
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(scales)
+library(forcats)
+```
+
+
+# Task 1: Process and summarize the data (15 points)
+
+### 1.1 Research questions (2.5 points) 
+
+To guide the direction of this assignment, I will specify the 4 research questions that were defined in my milestone 1, which are the following: 
+
+
+1. *Do recent released games have better reviews than the older ones?*
+2. *Are games with better reviews the most expensive ones?*
+3. *Are the most popular games (i.e. games with more reviews) the ones with the best overall review?*
+4. *Which developer produces the most popular games (i.e games with more reviews) or the ones with the best reviews?*
+
+
+### 1.2 Summarize and graphing (10 points)
+For each of the research questions, I chose one summarizing and one graphing task from the ones specified in the [instructions](https://stat545.stat.ubc.ca/mini-project/mini-project-2/). After that, a short line commenting weather it is useful or not to my research question is included. 
+
+
+**Summarizing:**
+
+1. Compute the *range*, *mean*, and *two other summary statistics* of **one numerical variable** across the groups of **one categorical variable** from your data.
+2. Compute the number of observations for at least one of your categorical variables. Do not use the function `table()`!
+3. Create a categorical variable with 3 or more groups from an existing numerical variable. You can use this new variable in the other tasks! *An example: age in years into "child, teen, adult, senior".*
+4. Based on two categorical variables, calculate two summary statistics of your choosing.
+
+**Graphing:**
+
+5. Create a graph out of summarized variables that has at least two geom layers.
+6. Create a graph of your choosing, make one of the axes logarithmic, and format the axes labels so that they are "pretty" or easier to read. 
+7. Make a graph where it makes sense to customize the alpha transparency.
+8. Create 3 histograms out of summarized variables, with each histogram having different sized bins. Pick the "best" one and explain why it is the best.
+
+Make sure it's clear what research question you are doing each operation for!
+
+#### Q1: Do recent released games have better reviews than the older ones?
+> **Summarizing task**: Create a categorical variable with 3 or more groups from an existing numerical variable. 
+
+To explore the reviews in games that were released in different time lapses, I decided to create 3 categories for the dataset, depending on their release date: 
+1. New (after 2011 to the present)
+2. Intermediate (from 2001 to 2011)
+3. Old (before 2001)
+
+```{r, warning=FALSE}
+#Code chunk to create the three categories described above
+
+#First, I check the format of the release date
+head(steam_games$release_date)
+class(steam_games$release_date) 
+
+#Creating the summarized tibble
+steam_games_q1 = (steam_games %>%
+                    mutate(release_date = mdy(release_date)) %>% #Use the mdy() lubridate function to change the data type from character to date
+                    mutate(release_date_category = case_when( release_date > dmy("01-01-2012") ~ "New",
+                                                             (dmy("31-12-2011") > release_date & release_date > dmy("01-01-2001")) ~ "Intermediate",
+                                                             release_date < dmy("31-12-2000") ~ "Old")) %>%
+                    mutate(release_date_category = as.factor(release_date_category)) %>% #Convert the categories to a factor
+                    mutate(release_date_category = fct_relevel(release_date_category, "Old", "Intermediate")) #Relevel the factors (will be useful for plotting later)
+                    )
+
+#NOTE: The format of release_date was heterogeneous in some games; it included elements such as "¯\\_(ツ)_/¯", "(When) I'm ready!", or just the year. Those games (4418/40833) failed to parse.
+
+#Explore the number of games we have in each category
+table(steam_games_q1$release_date_category) %>% knitr::kable(format = "markdown", col.names = c("Category", "Frequency"))
+```
+
+> **Graphing task**: Create a graph out of summarized variables that has at least two geom layers & Make a graph where it makes sense to customize the alpha transparency.
+
+Now, after creating the summarized variables, I decided to plot the reviews distribution for each category (new, intermediate and old). I will divide this task in 3 steps: extracting the reviews, converting them to a numerical value, and plotting the results. 
+
+*1. Extract the reviews*  
+
+As a first step, I will convert extract the reviews and create a new column that stores them
+```{r, warning=FALSE}
+#Code chunk to create a vairable with the reviews, and convert them to a numerical value that can be plotted
+
+steam_games_q1 = (steam_games_q1 %>%
+                    bind_cols(., #Bind a new column to the original dataset
+                              (str_split(steam_games_q1$all_reviews, pattern = ",", simplify = TRUE) %>% #separate the content of all_reviews using commas
+                                 as_tibble()%>% #Convert the matrix output to a tibble
+                                 select(V1)) %>% #Select only the first column that stores the category of the overall review
+                                rename( all_reviews_category= V1)) #Rename the variable to a more informative name
+         ) 
+```
+Then, I will explore the frequencies of the review categories to decide which number I will assign to each category
+```{r}
+table(steam_games_q1$all_reviews_category) %>% knitr::kable(format = "markdown", col.names = c("Category", "Frequency"))
+```
+
+*2. Convert the review categories to a numerical value*  
+
+As it can be seen in the previous part, there are several games that have no review category because the number of reviews they have is very small (1-9); those games will be filtered out of the plot. After looking at the table, I decided to assign the following numerical value to the categories: 
+
+- Overwhelmingly Positive: 4
+- Very Positive: 3
+- Positive: 2
+- Mostly positive: 1
+- Mixed: 0
+- Mostly Negative: -1
+- Negative: -2
+- Very Negative: -3
+- Overwhelmingly Negative: -4
+
+```{r}
+#Assign a number to each category in a new column
+steam_games_q1 = (steam_games_q1 %>%
+                    mutate(all_reviews_number = case_when(all_reviews_category == "Overwhelmingly Positive" ~ 4,
+                                                          all_reviews_category == "Very Positive" ~ 3,
+                                                          all_reviews_category == "Positive" ~ 2,
+                                                          all_reviews_category == "Mostly Positive" ~ 1,
+                                                          all_reviews_category == "Mixed" ~ 0,
+                                                          all_reviews_category == "Mostly Negative" ~ -1,
+                                                          all_reviews_category == "Negative" ~ -2,
+                                                          all_reviews_category == "Very Negative" ~ -3,
+                                                          all_reviews_category == "Overwhelmingly Negative" ~ -4
+                                                          )))
+
+#To check that the output tibble is correct, we look at the first entries
+steam_games_q1 %>% 
+  select(id, all_reviews, all_reviews_category,all_reviews_number) %>%
+  head() %>% 
+  knitr::kable(format = "markdown")
+```
+
+*3.Graphing*  
+
+Now that the tibble is correct for graphing and the reviews were converted to a numerical value, we can do the plot and observe the differences between all of the categories. 
+
+```{r, warning=F}
+steam_games_q1 %>% 
+  filter(!is.na(all_reviews_number), #Remove the games with no review category
+         !is.na(release_date_category)) %>% #Remove the games with an inconsistent datetime element
+  ggplot(aes(x = release_date_category, y = all_reviews_number, fill = release_date_category)) +
+  geom_boxplot() + 
+  geom_jitter(alpha = 0.15, width = 0.1)+ 
+  stat_summary(fun = mean, colour = "white")+ #Add the mean as a white dot in the barplot
+  theme_classic() + 
+  ylab("Review score")+ #Change the y lab 
+  xlab("Release date") +
+  guides(fill="none") #Remove the fill legends (non necessary)
+  
+```
+
+This task was helpful to answer my question (*Do recent released games have better reviews than the older ones?*) because, by dividing the games acoording to their release date in periods of 10 years, I could observe that there is a trend in old games to have better overall reviews than  intermediate and new ones (which was contrary to what I was expecting). However, a further statistical analysis is needed to make a conclusion.  
+
+#### Q2: Are games with better reviews the most expensive ones?
+> Summarizing task: Compute the *range*, *mean*, and *two other summary statistics* of **one numerical variable** across the groups of **one categorical variable** from your data.*
+
+For this research question, I will calculate the summary statistics of the price per category
+
+
+> Plotting task: Make a graph where it makes sense to customize the alpha transparency.
+
+To have a visual representation of the distribution of the variable that was summarized above, I decided to use a jitter plot, using alpha transparency to identify the distribution of the prices. 
+
+#### Q3: Are the most popular games (i.e. games with more reviews) the ones with the best overall review?
+> Summarizing task: Compute the *range*, *mean*, and *two other summary statistics* of **one numerical variable** across the groups of **one categorical variable** from your data
+
+For each category in the overall review, calculate that using the number of reviews of the games in each categroy
+
+> Graphing: Create a graph out of summarized variables that has at least two geom layers.
+Plot the ditribution: violin plot + jitter plot or barplot + jitter plot. Or histograms and divide per category (in that case try the bins)
+
+Plot the number of reviews for each of the categories of the overall review
+
+
+#### Q4: Which developer produces the most popular games (i.e games with more reviews)?
+> Summarizing task: Compute the *range*, *mean*, and *two other summary statistics* of **one numerical variable** across the groups of **one categorical variable** from your data.
+
+Summary statistic of number of reviews per developer 
+
+> Graphing task:  Create a graph out of summarized variables that has at least two geom layers
+
+Plot the distribution of reviews for each developer. Boxplot + Jitterplot 
+
+### 1.3 (2.5 points)
+
+Based on the operations that you've completed, how much closer are you to answering your research questions? Think about what aspects of your research questions remain unclear. Can your research questions be refined, now that you've investigated your data a bit more? Which research questions are yielding interesting results?
+
+<!------------------------- Write your answer here ---------------------------->
+
+
+<!----------------------------------------------------------------------------->
+
+# Task 2: Tidy your data (12.5 points)
+
+In this task, we will do several exercises to reshape our data. The goal here is to understand how to do this reshaping with the `tidyr` package.
+
+A reminder of the definition of *tidy* data:
+
+- Each row is an **observation**
+- Each column is a **variable**
+- Each cell is a **value**
+
+*Tidy'ing* data is sometimes necessary because it can simplify computation. Other times it can be nice to organize data so that it can be easier to understand when read manually. 
+
+### 2.1 (2.5 points)
+
+Based on the definition above, can you identify if your data is tidy or untidy? Go through all your columns, or if you have >8 variables, just pick 8, and explain whether the data is untidy or tidy.
+
+<!--------------------------- Start your work below --------------------------->
+
+
+<!----------------------------------------------------------------------------->
+
+### 2.2 (5 points)
+
+Now, if your data is tidy, untidy it! Then, tidy it back to it's original state.
+
+If your data is untidy, then tidy it! Then, untidy it back to it's original state.
+
+Be sure to explain your reasoning for this task. Show us the "before" and "after".
+
+<!--------------------------- Start your work below --------------------------->
+
+
+<!----------------------------------------------------------------------------->
+
+### 2.3 (5 points)
+
+Now, you should be more familiar with your data, and also have made progress in answering your research questions. Based on your interest, and your analyses, pick 2 of the 4 research questions to continue your analysis in milestone 3, and explain your decision. 
+
+Try to choose a version of your data that you think will be appropriate to answer these 2 questions in milestone 3. Use between 4 and 8 functions that we've covered so far (i.e. by filtering, cleaning, tidy'ing, dropping irrelvant columns, etc.). 
+
+<!--------------------------- Start your work below --------------------------->
+
+
+<!----------------------------------------------------------------------------->
+
+*When you are done, knit an `md` file. This is what we will mark! Make sure to open it and check that everything has knitted correctly before submitting your tagged release.*
+
+### Attribution
+
+Thanks to Victor Yuan for mostly putting this together. 
