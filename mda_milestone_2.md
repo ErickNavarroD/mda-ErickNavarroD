@@ -419,108 +419,25 @@ steam_games_q1 %>%
                                       table() %>% 
                                       names())[1:9]) %>% #Remove the games that did not have enough reviews to have an overall review (discussed in Q1 - Extract categories)
   group_by(all_reviews_category) %>% 
-  summarise(mean_reviews = mean(popularity), #Compute the summary statistics
-            std_reviews = sd(popularity),
-            median_reviews = median(popularity),
-            min_reviews = min(popularity),
-            max_reviews = max(popularity)) %>% 
+  summarise(mean_pop = mean(popularity), #Compute the summary statistics
+            std_pop = sd(popularity),
+            median_pop = median(popularity),
+            min_pop = min(popularity),
+            max_pop = max(popularity)) %>% 
   knitr::kable(format = "markdown")
 ```
 
-<table>
-<colgroup>
-<col width="26%" />
-<col width="14%" />
-<col width="13%" />
-<col width="17%" />
-<col width="13%" />
-<col width="13%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th align="left">all_reviews_category</th>
-<th align="right">mean_reviews</th>
-<th align="right">std_reviews</th>
-<th align="right">median_reviews</th>
-<th align="right">min_reviews</th>
-<th align="right">max_reviews</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">Overwhelmingly Positive</td>
-<td align="right">12966.71340</td>
-<td align="right">31030.43172</td>
-<td align="right">2413</td>
-<td align="right">500</td>
-<td align="right">310394</td>
-</tr>
-<tr class="even">
-<td align="left">Very Positive</td>
-<td align="right">2319.68437</td>
-<td align="right">13665.27086</td>
-<td align="right">279</td>
-<td align="right">50</td>
-<td align="right">553458</td>
-</tr>
-<tr class="odd">
-<td align="left">Positive</td>
-<td align="right">23.11771</td>
-<td align="right">10.91703</td>
-<td align="right">20</td>
-<td align="right">10</td>
-<td align="right">49</td>
-</tr>
-<tr class="even">
-<td align="left">Mostly Positive</td>
-<td align="right">1112.16490</td>
-<td align="right">8761.78135</td>
-<td align="right">82</td>
-<td align="right">10</td>
-<td align="right">407706</td>
-</tr>
-<tr class="odd">
-<td align="left">Mixed</td>
-<td align="right">846.76795</td>
-<td align="right">13464.48441</td>
-<td align="right">49</td>
-<td align="right">10</td>
-<td align="right">836608</td>
-</tr>
-<tr class="even">
-<td align="left">Mostly Negative</td>
-<td align="right">232.24297</td>
-<td align="right">1164.27441</td>
-<td align="right">31</td>
-<td align="right">10</td>
-<td align="right">22589</td>
-</tr>
-<tr class="odd">
-<td align="left">Negative</td>
-<td align="right">19.33333</td>
-<td align="right">10.12607</td>
-<td align="right">15</td>
-<td align="right">10</td>
-<td align="right">49</td>
-</tr>
-<tr class="even">
-<td align="left">Very Negative</td>
-<td align="right">148.02703</td>
-<td align="right">111.80476</td>
-<td align="right">107</td>
-<td align="right">51</td>
-<td align="right">483</td>
-</tr>
-<tr class="odd">
-<td align="left">Overwhelmingly Negative</td>
-<td align="right">1426.85714</td>
-<td align="right">925.46915</td>
-<td align="right">1096</td>
-<td align="right">509</td>
-<td align="right">3057</td>
-</tr>
-</tbody>
-</table>
+| all\_reviews\_category  |    mean\_pop|     std\_pop|  median\_pop|  min\_pop|  max\_pop|
+|:------------------------|------------:|------------:|------------:|---------:|---------:|
+| Overwhelmingly Positive |  12966.71340|  31030.43172|         2413|       500|    310394|
+| Very Positive           |   2319.68437|  13665.27086|          279|        50|    553458|
+| Positive                |     23.11771|     10.91703|           20|        10|        49|
+| Mostly Positive         |   1112.16490|   8761.78135|           82|        10|    407706|
+| Mixed                   |    846.76795|  13464.48441|           49|        10|    836608|
+| Mostly Negative         |    232.24297|   1164.27441|           31|        10|     22589|
+| Negative                |     19.33333|     10.12607|           15|        10|        49|
+| Very Negative           |    148.02703|    111.80476|          107|        51|       483|
+| Overwhelmingly Negative |   1426.85714|    925.46915|         1096|       509|      3057|
 
 > Graphing task: Create a graph out of summarized variables that has at least two geom layers & Create a graph of your choosing, make one of the axes logarithmic, and format the axes labels so that they are "pretty" or easier to read.
 
@@ -556,124 +473,107 @@ For this research question, I needed the popularity numbers of each game, which 
 *1. Summary statistics of popularity per developer*
 
 ``` r
-steam_games_q1 %>% 
+summary_q4 = (steam_games_q1 %>% 
   filter(!is.na(popularity), #Remove the games that have NA or NaN in the number of reviews column
          all_reviews_category %in% (steam_games_q1$all_reviews_category %>% 
                                       table() %>% 
                                       names())[1:9]) %>% #Remove the games that did not have enough reviews to have an overall review (discussed in Q1 - Extract categories)
-  group_by(all_reviews_category) %>% 
-  summarise(mean_reviews = mean(popularity), #Compute the summary statistics
-            std_reviews = sd(popularity),
-            median_reviews = median(popularity),
-            min_reviews = min(popularity),
-            max_reviews = max(popularity)) %>% 
+  group_by(developer) %>% 
+  summarise(n_games = n(),
+            mean_pop = mean(popularity), #Compute the summary statistics
+            std_pop = sd(popularity),
+            median_pop = median(popularity),
+            min_pop = min(popularity),
+            max_pop = max(popularity)) %>%
+  arrange(desc(mean_pop)))
+
+summary_q4 %>% 
+  head() %>% 
   knitr::kable(format = "markdown")
 ```
 
-<table>
-<colgroup>
-<col width="26%" />
-<col width="14%" />
-<col width="13%" />
-<col width="17%" />
-<col width="13%" />
-<col width="13%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th align="left">all_reviews_category</th>
-<th align="right">mean_reviews</th>
-<th align="right">std_reviews</th>
-<th align="right">median_reviews</th>
-<th align="right">min_reviews</th>
-<th align="right">max_reviews</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">Overwhelmingly Positive</td>
-<td align="right">12966.71340</td>
-<td align="right">31030.43172</td>
-<td align="right">2413</td>
-<td align="right">500</td>
-<td align="right">310394</td>
-</tr>
-<tr class="even">
-<td align="left">Very Positive</td>
-<td align="right">2319.68437</td>
-<td align="right">13665.27086</td>
-<td align="right">279</td>
-<td align="right">50</td>
-<td align="right">553458</td>
-</tr>
-<tr class="odd">
-<td align="left">Positive</td>
-<td align="right">23.11771</td>
-<td align="right">10.91703</td>
-<td align="right">20</td>
-<td align="right">10</td>
-<td align="right">49</td>
-</tr>
-<tr class="even">
-<td align="left">Mostly Positive</td>
-<td align="right">1112.16490</td>
-<td align="right">8761.78135</td>
-<td align="right">82</td>
-<td align="right">10</td>
-<td align="right">407706</td>
-</tr>
-<tr class="odd">
-<td align="left">Mixed</td>
-<td align="right">846.76795</td>
-<td align="right">13464.48441</td>
-<td align="right">49</td>
-<td align="right">10</td>
-<td align="right">836608</td>
-</tr>
-<tr class="even">
-<td align="left">Mostly Negative</td>
-<td align="right">232.24297</td>
-<td align="right">1164.27441</td>
-<td align="right">31</td>
-<td align="right">10</td>
-<td align="right">22589</td>
-</tr>
-<tr class="odd">
-<td align="left">Negative</td>
-<td align="right">19.33333</td>
-<td align="right">10.12607</td>
-<td align="right">15</td>
-<td align="right">10</td>
-<td align="right">49</td>
-</tr>
-<tr class="even">
-<td align="left">Very Negative</td>
-<td align="right">148.02703</td>
-<td align="right">111.80476</td>
-<td align="right">107</td>
-<td align="right">51</td>
-<td align="right">483</td>
-</tr>
-<tr class="odd">
-<td align="left">Overwhelmingly Negative</td>
-<td align="right">1426.85714</td>
-<td align="right">925.46915</td>
-<td align="right">1096</td>
-<td align="right">509</td>
-<td align="right">3057</td>
-</tr>
-</tbody>
-</table>
+| developer             |  n\_games|  mean\_pop|  std\_pop|  median\_pop|  min\_pop|  max\_pop|
+|:----------------------|---------:|----------:|---------:|------------:|---------:|---------:|
+| Smartly Dressed Games |         1|   325675.0|        NA|       325675|    325675|    325675|
+| PUBG Corporation      |         3|   279593.0|  482389.5|         1686|       485|    836608|
+| Re-Logic              |         1|   201266.0|        NA|       201266|    201266|    201266|
+| Rockstar North        |         3|   136585.7|  234797.1|         1165|       886|    407706|
+| Team Salvato          |         1|   113354.0|        NA|       113354|    113354|    113354|
+| ConcernedApe          |         1|   104530.0|        NA|       104530|    104530|    104530|
+
+> Graphing task: Create 3 histograms out of summarized variables, with each histogram having different sized bins. Pick the “best” one and explain why it is the best & Create a graph of your choosing, make one of the axes logarithmic, and format the axes labels so that they are “pretty” or easier to read.
+
+When looking at the head of the table, it can be observed that some developers have few games, which makes the summary statistics impossible to compute or non-informative. After ploting the histogram and watching that several games have 3 or more games, I decided to drop the rows that have less than 3.
+
+I also explored the histograms using different bins, and picked the one with 11, since it is smooth and represents the distribution of the data accurrately. The cutoff that I used can be observed as a vertical red line in each histogram.
+
+``` r
+summary_q4 %>% 
+  ggplot(aes(x = n_games))+
+  geom_histogram(bins = 30, fill = "blue", alpha = 0.5)+
+  xlab("Number of games")+
+  ylab("Frequency")+
+  scale_x_log10()+
+  geom_vline(xintercept = 3, color = "red")+
+  theme_classic()
+```
+
+![](mda_milestone_2_files/figure-markdown_github/unnamed-chunk-15-1.png)
+
+``` r
+summary_q4 %>% 
+  ggplot(aes(x = n_games))+
+  geom_histogram(bins = 20,fill = "blue", alpha = 0.5)+
+  xlab("Number of games")+
+  ylab("Frequency")+
+  scale_x_log10()+
+  geom_vline(xintercept = 3, color = "red")+
+  theme_classic()
+```
+
+![](mda_milestone_2_files/figure-markdown_github/unnamed-chunk-15-2.png)
+
+``` r
+summary_q4 %>% 
+  ggplot(aes(x = n_games))+
+  geom_histogram(bins =11,fill = "blue", alpha = 0.5)+
+  xlab("Number of games")+
+  ylab("Frequency")+
+  scale_x_log10()+
+  theme_classic()+
+  geom_vline(xintercept = 3, color = "red")
+```
+
+![](mda_milestone_2_files/figure-markdown_github/unnamed-chunk-15-3.png)
 
 > Graphing task: Create a graph out of summarized variables that has at least two geom layers
 
-Plot the distribution of reviews for each developer. Boxplot + Jitterplot
+Finaly, after observing that the cutoff still left games for my analysis, I plotted the mean popularity of the top 20 reviewed developers, with the standard deviation in the error bars to have an idea of the data dispersion.
 
-Do top popularity developers have as well top-reviewed games?
+``` r
+summary_q4 %>% 
+  filter(n_games >= 3 ) %>% 
+  head(20) %>% 
+  mutate(developer = as.factor(developer),
+         developer = fct_reorder(developer, mean_pop, min)) %>% 
+  ggplot(aes(x = developer,y = mean_pop, fill = developer)) +
+  geom_errorbar(aes(ymin = mean_pop, ymax = mean_pop + std_pop), width=0.1)+ #I set the lower part of the standard deviation bar to the mean because it is too big, so it extends to negative numbers. I decided to hide it; just by looking at the error bar that goes up we can have an idea of the dispersion without modifying the y axis of the plot
+  geom_col(alpha = 0.7)+
+  scale_y_continuous(labels = scales::dollar_format(prefix = ""))+
+  xlab("Developer")+
+  ylab("Popularity")+
+  coord_flip()+ 
+  guides(fill = "none")+
+  theme_classic()
+```
+
+![](mda_milestone_2_files/figure-markdown_github/unnamed-chunk-16-1.png)
+
+These tasks were helpful for my research question because I could identify the developers that produce the top 20 most popular games. However, the dispersion in their games popularity is very high. Therefore, based on these samples, I wonder if we could say that one developer produced statistically signifcant more popular games than other developer. A statistical analysis that compares each pair of developers could help me answer that question in the future.
 
 ### 1.3 (2.5 points)
 
-Based on the operations that you've completed, how much closer are you to answering your research questions? Think about what aspects of your research questions remain unclear. Can your research questions be refined, now that you've investigated your data a bit more? Which research questions are yielding interesting results?
+Based on Based on the operations that you've completed, how much closer are you to answering your research questions? Think about what aspects of your research questions remain unclear. Can your research questions be refined, now that you've investigated your data a bit more? Which research questions are yielding interesting results?
 
 <!------------------------- Write your answer here ---------------------------->
 <!----------------------------------------------------------------------------->
