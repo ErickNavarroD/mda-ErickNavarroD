@@ -181,7 +181,7 @@ This task was helpful to answer my question (*Do recent released games have bett
 #### Q2: Are games with better reviews the most expensive ones?
 > Summarizing task: Compute the *range*, *mean*, and *two other summary statistics* of **one numerical variable** across the groups of **one categorical variable** from your data.*
 
-For this research question, I will calculate the summary statistics of the price per review category, to explore the distribution of prices. Since I need a column that contains the review category of each game, which was already done in the previous question, I will use `steam_games_q1` as my starting dataset. 
+For this research question, I calculated the summary statistics of the price per review category, to explore the distribution of prices. Since I needed a column that contains the review category of each game, which was already done in the previous question, I used `steam_games_q1` as my starting dataset. 
 
 ```{r}
 steam_games_q1 %>% 
@@ -208,7 +208,7 @@ steam_games_q1 %>%
   filter(!is.na(original_price), #Remove the games that have NA in the original price
          all_reviews_category %in% (steam_games_q1$all_reviews_category %>% 
                                       table() %>% 
-                                      names())[1:9]) %>% #Remove the games that did not have enough reviews to have an overall review (discussed in Q1 - Extract vategories) 
+                                      names())[1:9]) %>% #Remove the games that did not have enough reviews to have an overall review (discussed in Q1 - Extract categories) 
   mutate(original_price = original_price + 1 ,
          all_reviews_category = fct_rev(all_reviews_category)) %>% #Add 1 to the price to avoid infinite values when applying the log10 transformation
   ggplot(aes(original_price, all_reviews_category))+
@@ -226,12 +226,76 @@ This task provided information that helped me to explore my question. By looking
 #### Q3: Are the most popular games (i.e. games with more reviews) the ones with the best overall review?
 > Summarizing task: Compute the *range*, *mean*, and *two other summary statistics* of **one numerical variable** across the groups of **one categorical variable** from your data
 
-For each category in the overall review, calculate that using the number of reviews of the games in each categroy
+I decided to calculate the summary statistics of the number of reviews per each review category. Exploring the distribution of the number of reviews per category, which I will use as a proxy of popularity, can help me to answer this research question.  
 
-> Graphing: Create a graph out of summarized variables that has at least two geom layers.
-Plot the ditribution: violin plot + jitter plot or barplot + jitter plot. Or histograms and divide per category (in that case try the bins)
+Since I needed a column that contains the review category of each game, which was already done in the research question 1, I used `steam_games_q1` as my starting point here. 
 
-Plot the number of reviews for each of the categories of the overall review
+The first step then, was to extract the number of reviews per game, which was embedded in the column all_reviews, as it can be observed here: 
+```{r}
+head(steam_games_q1$all_reviews)
+```
+
+To get the number of reviews it and make it a new independent column, I could not use the same approach as the one used in question 1 to extract the review categories, because the numeric values inside the brackets are separated by commas, so using said element to separate columns would lead to the review number being split. Therefore, I had to extract the element inside the brackets, and then coerce it into a numeric type. 
+
+```{r, warning=FALSE}
+
+steam_games_q1 = (steam_games_q1 %>%
+                    mutate(number_all_reviews = sub(").*", "",all_reviews),#Create a new column removing all of the characters after the ")" bracket in all_reviews
+                           number_all_reviews = sub(".*\\(","", number_all_reviews), #Remove all of the characters before the "(" bracket of the number_all_reviews column
+                           number_all_reviews = sub(",","", number_all_reviews),  #Eliminate the commas that separate the numbers so that I can coerce them to numeric
+                           number_all_reviews = as.numeric(number_all_reviews)) #Coerce the values to numeric
+                  ) 
+
+#Check that the final tibble is correct
+steam_games_q1 %>% 
+  select(id, all_reviews, number_all_reviews) %>% 
+  head() %>% 
+  knitr::kable(format = "markdown")
+
+```
+
+After extracting the review numbers, I computed the summary statistics of the number of reviews (popularity) per category
+
+```{r}
+steam_games_q1 %>% 
+  filter(!is.na(number_all_reviews), #Remove the games that have NA or NaN in the number of reviews column
+         all_reviews_category %in% (steam_games_q1$all_reviews_category %>% 
+                                      table() %>% 
+                                      names())[1:9]) %>% #Remove the games that did not have enough reviews to have an overall review (discussed in Q1 - Extract categories)
+  group_by(all_reviews_category) %>% 
+  summarise(mean_reviews = mean(number_all_reviews), #Compute the summary statistics
+            std_reviews = sd(number_all_reviews),
+            median_reviews = median(number_all_reviews),
+            min_reviews = min(number_all_reviews),
+            max_reviews = max(number_all_reviews)) %>% 
+  knitr::kable(format = "markdown")
+
+```
+
+> Graphing task: Create a graph out of summarized variables that has at least two geom layers & Create a graph of your choosing, make one of the axes logarithmic, and format the axes labels so that they are "pretty" or easier to read. 
+
+Finally, I plotted the popularity distribution of the games per category, marking the mean as an asterisk. 
+
+```{r, warning=F, fig.width = 11, fig.height=5}
+
+steam_games_q1 %>% 
+  filter(!is.na(number_all_reviews), #Remove the games that have NA in the number of reviews
+         all_reviews_category %in% (steam_games_q1$all_reviews_category %>% 
+                                      table() %>% 
+                                      names())[1:9]) %>% #Remove the games that did not have enough reviews to have an overall review (discussed in Q1 - Extract categories) 
+  ggplot(aes(x = all_reviews_category, y = number_all_reviews, fill = all_reviews_category))+
+  geom_violin( alpha = 0.5) +
+  geom_boxplot(width= 0.1, alpha = 0.3) +
+  stat_summary(fun = mean, colour = "black", shape = 8)+
+  scale_y_log10(label = scales::label_dollar(prefix = "")) +
+  ylab("Game popularity")+
+  xlab("Overall review")+
+  guides(fill = "none")  +
+  theme_classic()
+  
+```
+
+With these tasks, I could see that there is a difference in the popularity distribution of the games across different categories. Games with positive and negative reviews tend to be less popular than games with overwhelmingly positive or overwhelmingly negative results. I would be interested in doing a statistical test to evaluate each category and know which ones are statistically significantly different from others. For what I can see here, probably more than 2 categories could be different to at least 2 other groups. 
 
 
 #### Q4: Which developer produces the most popular games (i.e games with more reviews)?

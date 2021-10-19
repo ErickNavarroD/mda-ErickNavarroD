@@ -272,7 +272,7 @@ This task was helpful to answer my question (*Do recent released games have bett
 
 > Summarizing task: Compute the *range*, *mean*, and *two other summary statistics* of **one numerical variable** across the groups of **one categorical variable** from your data.\*
 
-For this research question, I will calculate the summary statistics of the price per review category, to explore the distribution of prices. Since I need a column that contains the review category of each game, which was already done in the previous question, I will use `steam_games_q1` as my starting dataset.
+For this research question, I calculated the summary statistics of the price per review category, to explore the distribution of prices. Since I needed a column that contains the review category of each game, which was already done in the previous question, I used `steam_games_q1` as my starting dataset.
 
 ``` r
 steam_games_q1 %>% 
@@ -310,7 +310,7 @@ steam_games_q1 %>%
   filter(!is.na(original_price), #Remove the games that have NA in the original price
          all_reviews_category %in% (steam_games_q1$all_reviews_category %>% 
                                       table() %>% 
-                                      names())[1:9]) %>% #Remove the games that did not have enough reviews to have an overall review (discussed in Q1 - Extract vategories) 
+                                      names())[1:9]) %>% #Remove the games that did not have enough reviews to have an overall review (discussed in Q1 - Extract categories) 
   mutate(original_price = original_price + 1 ,
          all_reviews_category = fct_rev(all_reviews_category)) %>% #Add 1 to the price to avoid infinite values when applying the log10 transformation
   ggplot(aes(original_price, all_reviews_category))+
@@ -329,11 +329,223 @@ This task provided information that helped me to explore my question. By looking
 
 > Summarizing task: Compute the *range*, *mean*, and *two other summary statistics* of **one numerical variable** across the groups of **one categorical variable** from your data
 
-For each category in the overall review, calculate that using the number of reviews of the games in each categroy
+I decided to calculate the summary statistics of the number of reviews per each review category. Exploring the distribution of the number of reviews per category, which I will use as a proxy of popularity, can help me to answer this research question.
 
-> Graphing: Create a graph out of summarized variables that has at least two geom layers. Plot the ditribution: violin plot + jitter plot or barplot + jitter plot. Or histograms and divide per category (in that case try the bins)
+Since I needed a column that contains the review category of each game, which was already done in the research question 1, I used `steam_games_q1` as my starting point here.
 
-Plot the number of reviews for each of the categories of the overall review
+The first step then, was to extract the number of reviews per game, which was embedded in the column all\_reviews, as it can be observed here:
+
+``` r
+head(steam_games_q1$all_reviews)
+```
+
+    ## [1] "Very Positive,(42,550),- 92% of the 42,550 user reviews for this game are positive."  
+    ## [2] "Mixed,(836,608),- 49% of the 836,608 user reviews for this game are positive."        
+    ## [3] "Mostly Positive,(7,030),- 71% of the 7,030 user reviews for this game are positive."  
+    ## [4] "Mixed,(167,115),- 61% of the 167,115 user reviews for this game are positive."        
+    ## [5] "Mostly Positive,(11,481),- 74% of the 11,481 user reviews for this game are positive."
+    ## [6] "NaN"
+
+To get the number of reviews it and make it a new independent column, I could not use the same approach as the one used in question 1 to extract the review categories, because the numeric values inside the brackets are separated by commas, so using said element to separate columns would lead to the review number being split. Therefore, I had to extract the element inside the brackets, and then coerce it into a numeric type.
+
+``` r
+steam_games_q1 = (steam_games_q1 %>%
+                    mutate(number_all_reviews = sub(").*", "",all_reviews),#Create a new column removing all of the characters after the ")" bracket in all_reviews
+                           number_all_reviews = sub(".*\\(","", number_all_reviews), #Remove all of the characters before the "(" bracket of the number_all_reviews column
+                           number_all_reviews = sub(",","", number_all_reviews),  #Eliminate the commas that separate the numbers so that I can coerce them to numeric
+                           number_all_reviews = as.numeric(number_all_reviews)) #Coerce the values to numeric
+                  ) 
+
+#Check that the final tibble is correct
+steam_games_q1 %>% 
+  select(id, all_reviews, number_all_reviews) %>% 
+  head() %>% 
+  knitr::kable(format = "markdown")
+```
+
+<table>
+<colgroup>
+<col width="3%" />
+<col width="78%" />
+<col width="18%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="right">id</th>
+<th align="left">all_reviews</th>
+<th align="right">number_all_reviews</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">Very Positive,(42,550),- 92% of the 42,550 user reviews for this game are positive.</td>
+<td align="right">42550</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">Mixed,(836,608),- 49% of the 836,608 user reviews for this game are positive.</td>
+<td align="right">836608</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">Mostly Positive,(7,030),- 71% of the 7,030 user reviews for this game are positive.</td>
+<td align="right">7030</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">Mixed,(167,115),- 61% of the 167,115 user reviews for this game are positive.</td>
+<td align="right">167115</td>
+</tr>
+<tr class="odd">
+<td align="right">5</td>
+<td align="left">Mostly Positive,(11,481),- 74% of the 11,481 user reviews for this game are positive.</td>
+<td align="right">11481</td>
+</tr>
+<tr class="even">
+<td align="right">6</td>
+<td align="left">NaN</td>
+<td align="right">NaN</td>
+</tr>
+</tbody>
+</table>
+
+After extracting the review numbers, I computed the summary statistics of the number of reviews (popularity) per category
+
+``` r
+steam_games_q1 %>% 
+  filter(!is.na(number_all_reviews), #Remove the games that have NA or NaN in the number of reviews column
+         all_reviews_category %in% (steam_games_q1$all_reviews_category %>% 
+                                      table() %>% 
+                                      names())[1:9]) %>% #Remove the games that did not have enough reviews to have an overall review (discussed in Q1 - Extract categories)
+  group_by(all_reviews_category) %>% 
+  summarise(mean_reviews = mean(number_all_reviews), #Compute the summary statistics
+            std_reviews = sd(number_all_reviews),
+            median_reviews = median(number_all_reviews),
+            min_reviews = min(number_all_reviews),
+            max_reviews = max(number_all_reviews)) %>% 
+  knitr::kable(format = "markdown")
+```
+
+<table>
+<colgroup>
+<col width="26%" />
+<col width="14%" />
+<col width="13%" />
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">all_reviews_category</th>
+<th align="right">mean_reviews</th>
+<th align="right">std_reviews</th>
+<th align="right">median_reviews</th>
+<th align="right">min_reviews</th>
+<th align="right">max_reviews</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Overwhelmingly Positive</td>
+<td align="right">12966.71340</td>
+<td align="right">31030.43172</td>
+<td align="right">2413</td>
+<td align="right">500</td>
+<td align="right">310394</td>
+</tr>
+<tr class="even">
+<td align="left">Very Positive</td>
+<td align="right">2319.68437</td>
+<td align="right">13665.27086</td>
+<td align="right">279</td>
+<td align="right">50</td>
+<td align="right">553458</td>
+</tr>
+<tr class="odd">
+<td align="left">Positive</td>
+<td align="right">23.11771</td>
+<td align="right">10.91703</td>
+<td align="right">20</td>
+<td align="right">10</td>
+<td align="right">49</td>
+</tr>
+<tr class="even">
+<td align="left">Mostly Positive</td>
+<td align="right">1112.16490</td>
+<td align="right">8761.78135</td>
+<td align="right">82</td>
+<td align="right">10</td>
+<td align="right">407706</td>
+</tr>
+<tr class="odd">
+<td align="left">Mixed</td>
+<td align="right">846.76795</td>
+<td align="right">13464.48441</td>
+<td align="right">49</td>
+<td align="right">10</td>
+<td align="right">836608</td>
+</tr>
+<tr class="even">
+<td align="left">Mostly Negative</td>
+<td align="right">232.24297</td>
+<td align="right">1164.27441</td>
+<td align="right">31</td>
+<td align="right">10</td>
+<td align="right">22589</td>
+</tr>
+<tr class="odd">
+<td align="left">Negative</td>
+<td align="right">19.33333</td>
+<td align="right">10.12607</td>
+<td align="right">15</td>
+<td align="right">10</td>
+<td align="right">49</td>
+</tr>
+<tr class="even">
+<td align="left">Very Negative</td>
+<td align="right">148.02703</td>
+<td align="right">111.80476</td>
+<td align="right">107</td>
+<td align="right">51</td>
+<td align="right">483</td>
+</tr>
+<tr class="odd">
+<td align="left">Overwhelmingly Negative</td>
+<td align="right">1426.85714</td>
+<td align="right">925.46915</td>
+<td align="right">1096</td>
+<td align="right">509</td>
+<td align="right">3057</td>
+</tr>
+</tbody>
+</table>
+
+> Graphing: Create a graph out of summarized variables that has at least two geom layers. Plot the ditribution: violin plot + jitter plot or barplot + jitter plot
+
+Finally, I plotted the popularity distribution of the games per category, marking the mean as an asterisk.
+
+``` r
+steam_games_q1 %>% 
+  filter(!is.na(number_all_reviews), #Remove the games that have NA in the number of reviews
+         all_reviews_category %in% (steam_games_q1$all_reviews_category %>% 
+                                      table() %>% 
+                                      names())[1:9]) %>% #Remove the games that did not have enough reviews to have an overall review (discussed in Q1 - Extract categories) 
+  ggplot(aes(x = all_reviews_category, y = number_all_reviews, fill = all_reviews_category))+
+  geom_violin( alpha = 0.5) +
+  geom_boxplot(width= 0.1) +
+  stat_summary(fun = mean, colour = "black", shape = 8)+
+  scale_y_log10(label = scales::label_dollar(prefix = "")) +
+  ylab("Game popularity")+
+  xlab("Overall review")+
+  guides(fill = "none")  +
+  theme_classic()
+```
+
+![](mda_milestone_2_files/figure-markdown_github/unnamed-chunk-13-1.png)
+
+Here,
 
 #### Q4: Which developer produces the most popular games (i.e games with more reviews)?
 
