@@ -175,6 +175,7 @@ steam_games_q1 %>%
   
 ```
 
+
 This task was helpful to answer my question (*Do recent released games have better reviews than the older ones?*) because, by dividing the games acoording to their release date in periods of 10 years, I could observe that there is a trend in old games to have better overall reviews than  intermediate and new ones (which was contrary to what I was expecting). However, a further statistical analysis is needed to make a conclusion.  
 
 #### Q2: Are games with better reviews the most expensive ones?
@@ -202,7 +203,7 @@ steam_games_q1 %>%
 
 To have a visual representation of the distribution of the variable that was summarized above (price) in each category and compare them, I decided to use the function `geom_density_ridges()` 
 
-```{r}
+```{r, message=F}
 steam_games_q1 %>% 
   filter(!is.na(original_price), #Remove the games that have NA in the original price
          all_reviews_category %in% (steam_games_q1$all_reviews_category %>% 

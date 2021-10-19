@@ -321,8 +321,6 @@ steam_games_q1 %>%
   guides(fill = "none") 
 ```
 
-    ## Picking joint bandwidth of 0.0996
-
 ![](mda_milestone_2_files/figure-markdown_github/unnamed-chunk-9-1.png)
 
 This task provided information that helped me to explore my question. By looking at the density of each group, I can see that, overall, they all have a very similar distribution around similar prices. There are some categories, such as Overwhelmingly Negative, that have a slightly different shape, and a strong peak. I wonder if those differences are enough for its prices to be statistically different compared to any of the other categories when doing a proper statistical test.
