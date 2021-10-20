@@ -1086,12 +1086,12 @@ After becoming more familiar with my data and making progress in my research que
 
 2.  *Are the most popular games the ones with the best overall review? (Q3)*. I chose it because I found interesting the distribution of the number of reviews per category. Just by looking at the produced plot, I would say that it is probable to find statistical differences among some categories. I would like to explore that in the future and know if the review of a game has an impact on the number of people that play it or not.
 
-To answer those questions in milestone 3, I will use the make use of the `steam_games_q1` dataset, which was produced along the whole assignment. It would be repetitive en redundant to write all the code that I did here again, but all the steps for filtering, creating new columns, extracting embedded values, cleaning and tidying can be clearly seen in the task 1 across the 4 research question tasks (which altogether involve more than 4 functions). Here, as a final step, I will only drop the columns that have no potential use in my research questions.
+To answer those questions in milestone 3, I will use the make use of the `steam_games_q1` dataset, which was produced along the whole assignment. It would be repetitive en redundant to write all the code that I did here again, but all the steps for filtering, creating new columns, extracting embedded values, cleaning and tidying can be clearly seen in the task 1 across the 4 research question tasks (which altogether involve more than 4 functions). Here, as a final step, I will only drop the columns that have no potential use in my 2 chosen research questions.
 
 ``` r
 steam_games_mda2_final = (
   steam_games_q1 %>% 
-    select(id, name, release_date, developer, original_price, release_date_category, all_reviews, all_reviews_category, all_reviews_number, popularity)
+    select(id, name, release_date, release_date_category, all_reviews, all_reviews_category, all_reviews_number, popularity)
 )
 
 head(steam_games_mda2_final) %>% 
@@ -1101,23 +1101,19 @@ head(steam_games_mda2_final) %>%
 <table style="width:100%;">
 <colgroup>
 <col width="1%" />
-<col width="16%" />
-<col width="5%" />
-<col width="7%" />
+<col width="19%" />
 <col width="6%" />
+<col width="10%" />
+<col width="38%" />
+<col width="9%" />
 <col width="8%" />
-<col width="33%" />
-<col width="8%" />
-<col width="7%" />
-<col width="4%" />
+<col width="5%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th align="right">id</th>
 <th align="left">name</th>
 <th align="left">release_date</th>
-<th align="left">developer</th>
-<th align="right">original_price</th>
 <th align="left">release_date_category</th>
 <th align="left">all_reviews</th>
 <th align="left">all_reviews_category</th>
@@ -1130,8 +1126,6 @@ head(steam_games_mda2_final) %>%
 <td align="right">1</td>
 <td align="left">DOOM</td>
 <td align="left">2016-05-12</td>
-<td align="left">id Software</td>
-<td align="right">19.99</td>
 <td align="left">New</td>
 <td align="left">Very Positive,(42,550),- 92% of the 42,550 user reviews for this game are positive.</td>
 <td align="left">Very Positive</td>
@@ -1142,8 +1136,6 @@ head(steam_games_mda2_final) %>%
 <td align="right">2</td>
 <td align="left">PLAYERUNKNOWN'S BATTLEGROUNDS</td>
 <td align="left">2017-12-21</td>
-<td align="left">PUBG Corporation</td>
-<td align="right">29.99</td>
 <td align="left">New</td>
 <td align="left">Mixed,(836,608),- 49% of the 836,608 user reviews for this game are positive.</td>
 <td align="left">Mixed</td>
@@ -1154,8 +1146,6 @@ head(steam_games_mda2_final) %>%
 <td align="right">3</td>
 <td align="left">BATTLETECH</td>
 <td align="left">2018-04-24</td>
-<td align="left">Harebrained Schemes</td>
-<td align="right">39.99</td>
 <td align="left">New</td>
 <td align="left">Mostly Positive,(7,030),- 71% of the 7,030 user reviews for this game are positive.</td>
 <td align="left">Mostly Positive</td>
@@ -1166,8 +1156,6 @@ head(steam_games_mda2_final) %>%
 <td align="right">4</td>
 <td align="left">DayZ</td>
 <td align="left">2018-12-13</td>
-<td align="left">Bohemia Interactive</td>
-<td align="right">44.99</td>
 <td align="left">New</td>
 <td align="left">Mixed,(167,115),- 61% of the 167,115 user reviews for this game are positive.</td>
 <td align="left">Mixed</td>
@@ -1178,8 +1166,6 @@ head(steam_games_mda2_final) %>%
 <td align="right">5</td>
 <td align="left">EVE Online</td>
 <td align="left">2003-05-06</td>
-<td align="left">CCP</td>
-<td align="right">0.00</td>
 <td align="left">Intermediate</td>
 <td align="left">Mostly Positive,(11,481),- 74% of the 11,481 user reviews for this game are positive.</td>
 <td align="left">Mostly Positive</td>
@@ -1190,8 +1176,6 @@ head(steam_games_mda2_final) %>%
 <td align="right">6</td>
 <td align="left">Grand Theft Auto V: Premium Online Edition</td>
 <td align="left">NA</td>
-<td align="left">Rockstar North</td>
-<td align="right">NA</td>
 <td align="left">NA</td>
 <td align="left">NaN</td>
 <td align="left">NaN</td>

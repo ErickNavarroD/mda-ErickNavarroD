@@ -466,12 +466,12 @@ After becoming more familiar with my data and making progress in my research que
 
 
 To answer those questions in milestone 3, I will use the make use of the `steam_games_q1` dataset, which was produced along the whole assignment. It would be repetitive en redundant to write all the code that I did here again, but all the steps for filtering, creating new columns, extracting embedded values, cleaning and tidying can be clearly seen in the task 1 across the 4 research question tasks (which altogether involve more than 4 functions). 
-Here, as a final step, I will only drop the columns that have no potential use in my research questions. 
+Here, as a final step, I will only drop the columns that have no potential use in my 2 chosen research questions. 
 
 ```{r}
 steam_games_mda2_final = (
   steam_games_q1 %>% 
-    select(id, name, release_date, developer, original_price, release_date_category, all_reviews, all_reviews_category, all_reviews_number, popularity)
+    select(id, name, release_date, release_date_category, all_reviews, all_reviews_category, all_reviews_number, popularity)
 )
 
 head(steam_games_mda2_final) %>% 
