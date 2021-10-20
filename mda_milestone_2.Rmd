@@ -36,28 +36,29 @@ To guide the direction of this assignment, I will specify the 4 research questio
 For each of the research questions, I chose one summarizing and one graphing task from the ones specified in the [instructions](https://stat545.stat.ubc.ca/mini-project/mini-project-2/). After that, a short line commenting weather it is useful or not to my research question is included. 
 
 
-**Summarizing:**
-
+>**Summarizing tasks:**
 1. Compute the *range*, *mean*, and *two other summary statistics* of **one numerical variable** across the groups of **one categorical variable** from your data.
 2. Compute the number of observations for at least one of your categorical variables. Do not use the function `table()`!
 3. Create a categorical variable with 3 or more groups from an existing numerical variable. You can use this new variable in the other tasks! *An example: age in years into "child, teen, adult, senior".*
 4. Based on two categorical variables, calculate two summary statistics of your choosing.
 
-**Graphing:**
 
+>**Graphing taks:**
 5. Create a graph out of summarized variables that has at least two geom layers.
 6. Create a graph of your choosing, make one of the axes logarithmic, and format the axes labels so that they are "pretty" or easier to read. 
 7. Make a graph where it makes sense to customize the alpha transparency.
 8. Create 3 histograms out of summarized variables, with each histogram having different sized bins. Pick the "best" one and explain why it is the best.
 
-Make sure it's clear what research question you are doing each operation for!
 
 #### Q1: Do recent released games have better reviews than the older ones?
 > **Summarizing task**: Create a categorical variable with 3 or more groups from an existing numerical variable. 
 
 To explore the reviews in games that were released in different time lapses, I decided to create 3 categories for the dataset, depending on their release date: 
+
 1. New (after 2011 to the present)
+
 2. Intermediate (from 2001 to 2011)
+
 3. Old (before 2001)
 
 ```{r, warning=FALSE}
@@ -85,11 +86,11 @@ table(steam_games_q1$release_date_category) %>% knitr::kable(format = "markdown"
 
 > **Graphing task**: Create a graph out of summarized variables that has at least two geom layers & Make a graph where it makes sense to customize the alpha transparency.
 
-Now, after creating the summarized variables, I decided to plot the reviews distribution for each category (new, intermediate and old). I will divide this task in 3 steps: extracting the reviews, converting them to a numerical value, and plotting the results. 
+Now, after creating the summarized variables, I decided to plot the reviews distribution for each category (new, intermediate and old). I divided this task in 3 steps: extracting the reviews, converting them to a numerical value, and plotting the results. 
 
 *1. Extract the reviews*  
 
-As a first step, I will convert extract the reviews and create a new column that stores them
+As a first step, I extracted the reviews and created a new column that stores them
 ```{r, warning=FALSE}
 #Code chunk to create a vairable with the reviews, and convert them to a numerical value that can be plotted
 
@@ -102,12 +103,16 @@ steam_games_q1 = (steam_games_q1 %>%
                     mutate(all_reviews_category = factor(all_reviews_category)) #Make the categories a factor 
                   ) 
 ```
-Then, I will explore the frequencies of the review categories to decide which number I will assign to each category
+
+Then, I explored the frequencies of the review categories to decide which number I was going to assign to each category
+
 ```{r}
 table(steam_games_q1$all_reviews_category) %>% knitr::kable(format = "markdown", col.names = c("Category", "Frequency"))
 ```
 
-Finally, I will reorder the factors according to the correct order of categories, which is going to be useful in the future in case I want to plot. 
+
+Finally, I reordered the factors according to the correct order of categories, which was going to be useful in the future in case I wanted to plot. 
+
 ```{r}
 steam_games_q1 = (steam_games_q1 %>% mutate(all_reviews_category = fct_relevel(all_reviews_category, "Overwhelmingly Positive",
                                                                         "Very Positive",
@@ -123,7 +128,7 @@ steam_games_q1 = (steam_games_q1 %>% mutate(all_reviews_category = fct_relevel(a
 
 *2. Convert the review categories to a numerical value*  
 
-As it can be seen in the previous part, there are several games that have no review category because the number of reviews they have is very small (1-9); those games will be filtered out of the plot. After looking at the table, I decided to assign the following numerical value to the categories: 
+As it can be seen in the previous part, there were several games that had no review category because the number of reviews they had was very small (1-9); those games were decided to be filtered out of the plot. After looking at the table, I decided to assign the following numerical value to the categories: 
 
 - Overwhelmingly Positive: 4
 - Very Positive: 3
@@ -158,7 +163,7 @@ steam_games_q1 %>%
 
 *3.Graphing*  
 
-Now that the tibble is correct for graphing and the reviews were converted to a numerical value, we can do the plot and observe the differences between all of the categories. 
+Now that the tibble was correct for graphing and the reviews were converted to a numerical value, the plot could be done and I could observe the differences between all of the categories. 
 
 ```{r, warning=F, message=F}
 steam_games_q1 %>% 
@@ -226,16 +231,16 @@ This task provided information that helped me to explore my question. By looking
 #### Q3: Are the most popular games (i.e. games with more reviews) the ones with the best overall review?
 > Summarizing task: Compute the *range*, *mean*, and *two other summary statistics* of **one numerical variable** across the groups of **one categorical variable** from your data
 
-I decided to calculate the summary statistics of the number of reviews per each review category. Exploring the distribution of the number of reviews per category, which I will use as a proxy of popularity, can help me to answer this research question.  
+Dor this research question, I decided to calculate the summary statistics of the number of reviews per each review category. Exploring the distribution of the number of reviews per category, which I will use as a proxy of popularity, can help me to answer this question.  
 
-Since I needed a column that contains the review category of each game, which was already done in the research question 1, I used `steam_games_q1` as my starting point here. 
+Since I needed a column that contained the review category of each game, which was already done in the research question 1, I used `steam_games_q1` as my starting point. 
 
 The first step then, was to extract the number of reviews per game, which was embedded in the column all_reviews, as it can be observed here: 
 ```{r}
 head(steam_games_q1$all_reviews)
 ```
 
-To get the number of reviews it and make it a new independent column, I could not use the same approach as the one used in question 1 to extract the review categories, because the numeric values inside the brackets are separated by commas, so using said element to separate columns would lead to the review number being split. Therefore, I had to extract the element inside the brackets, and then coerce it into a numeric type. 
+To get the number of reviews and make it a new independent column, I could not use the same approach that I used in the question 1 to extract the review categories, because the numeric values inside the brackets are separated by commas. Then, using commas to separate columns would lead to the review number being split. Therefore, I had to extract the element inside the brackets, and then coerce it into a numeric type. 
 
 ```{r, warning=FALSE}
 
@@ -382,63 +387,98 @@ summary_q4 %>%
 These tasks were helpful for my research question because I could identify the developers that produce the top 20 most popular games. However, the dispersion in their games popularity is very high. Therefore, based on these samples, I wonder if we could say that one developer produced statistically signifcant more popular games than other developer. A statistical analysis that compares each pair of developers could help me answer that question in the future. 
 
 
-### 1.3 (2.5 points)
+### 1.3 Check-point (2.5 points)
 
-Based on 
-Based on the operations that you've completed, how much closer are you to answering your research questions? Think about what aspects of your research questions remain unclear. Can your research questions be refined, now that you've investigated your data a bit more? Which research questions are yielding interesting results?
+Based on the operations that I completed, I am closer to answer most of my research questions. For each of them, I produced plots that visually helped me to explore the variables that I was interested in and have an idea of what the results could look like. The next step in each of them would be to perform a statistical analysis to obtain significant conclusions, since only with plots, the statistical differences between categories remains unclear. 
 
-<!------------------------- Write your answer here ---------------------------->
+A more specific comment on each research question can be found at the bottom of each question section, in the previous task (1.2). 
 
-
-<!----------------------------------------------------------------------------->
+In conclussion, after observing the results of this milestone, the research questions that yielded the most interesting results were Q1, Q2 and Q3. 
 
 # Task 2: Tidy your data (12.5 points)
 
-In this task, we will do several exercises to reshape our data. The goal here is to understand how to do this reshaping with the `tidyr` package.
+In this task, I was asked to reshape my data. I will work with the modified dataset that I produced throughout the task 1 (`steam_games_q1`).
 
-A reminder of the definition of *tidy* data:
+By definition, tidy data has the following attributes: 
 
 - Each row is an **observation**
 - Each column is a **variable**
 - Each cell is a **value**
 
-*Tidy'ing* data is sometimes necessary because it can simplify computation. Other times it can be nice to organize data so that it can be easier to understand when read manually. 
+### Exploring the tidyness of my data 2.1 (2.5 points)
 
-### 2.1 (2.5 points)
+Based on the definition provided above, I can say that my dataset is tidy for my specific questions, as it can be observed in the 8 variables I picked, according to their utility for my analysis. 
 
-Based on the definition above, can you identify if your data is tidy or untidy? Go through all your columns, or if you have >8 variables, just pick 8, and explain whether the data is untidy or tidy.
+In the displayed table, each row corresponds to a single observation (game), each column is a variable that I used for any of my questions, and each cell contains a single value. 
 
-<!--------------------------- Start your work below --------------------------->
+```{r}
+task_2.1 = (steam_games_q1 %>% 
+  select(id, release_date, developer, original_price, release_date_category, all_reviews_category, all_reviews_number, popularity))
+
+task_2.1%>% 
+  head(10) %>% 
+  knitr::kable(format = "markdown")
+```
+
+### 2.2 Untidying and tidying the data (5 points)
+
+*Untidying the data*
+
+After observing that my data is tidy, I proceeded to untidy it, which can be seen in the following table. I decided to make a wider dataset by making each review category an independent column, with the popularity value as their content.
+
+As it can be observed, the dataset is untidy since not all of the columns correspond to a single variable for my research questions (specially for the research questions 2 and 3 that evaluate the category as a variable), and each cell is not a useful value. 
+
+```{r}
+task_2.1_untid = (task_2.1 %>% 
+  pivot_wider(id_cols = -c(all_reviews_category, popularity),
+              names_from = all_reviews_category,
+              values_from = popularity))
+
+task_2.1_untid %>% 
+  head() %>% 
+  knitr::kable(format = "markdown")
+  
+```
+
+*Tidying back the data*
+
+Then, I made it tidy again by reverting the changes I made in the previous chunk code. 
+
+```{r}
+task_2.1_untid %>% 
+  pivot_longer(cols = -c(id, release_date, original_price, developer, original_price, release_date_category, all_reviews_number),
+               names_to = "all_reviews_category", 
+               values_to = "popularity") %>% 
+  filter(!is.na(popularity)) %>% #Remove the NAs that were generated when making the dataset wider
+  head() %>% 
+  knitr::kable(format = "markdown")
+```
+
+As it can be observed, the dataset is tidy again since each column is a single variable that is used in any of my research questions. It is interesting to observe that, even though it is very similar to the original dataset (table in task 2.1), it is not the same. This happened because I had to filter the NAs that were introduced in the dataset when I made it wider and, since some games already had a NA or NaN in their popularity, they were removed as well in that step. However, I made the same filters for question 2 and 3. Therefore, that can not be seen as a lost of information because for the analysis steps where I used the popularity variable, NaNs and NAs were also filtered out. However, some games that were used in the other questions might have been deleted when reshaping the data twice. 
+
+### 2.3 Choosing the final 2 research questions (5 points)
+
+After becoming more familiar with my data and making progress in my research questions, I chose the following ones: 
+
+1. *Do recent released games have better reviews than the older ones? (Q1)*. I chose it because I found very interesting the trend of old video games to have better reviews than new ones, at least visually (which is contrary to wha I was expecting). I would like to test that hypothesis in the future and explore its results to know if the progress that has been made lately in developing videogames is associated to actually improving the gaming experience of the users. 
+
+2. *Are the most popular games the ones with the best overall review? (Q3)*. I chose it because I found interesting the distribution of the number of reviews per category. Just by looking at the produced plot, I would say that it is probable to find statistical differences among some categories. I would like to explore that in the future and know if the review of a game has an impact on the number of people that play it or not. 
 
 
-<!----------------------------------------------------------------------------->
+To answer those questions in milestone 3, I will use the make use of the `steam_games_q1` dataset, which was produced along the whole assignment. It would be repetitive en redundant to write all the code that I did here again, but all the steps for filtering, creating new columns, extracting embedded values, cleaning and tidying can be clearly seen in the task 1 across the 4 research question tasks (which altogether involve more than 4 functions). 
+Here, as a final step, I will only drop the columns that have no potential use in my research questions. 
 
-### 2.2 (5 points)
+```{r}
+steam_games_mda2_final = (
+  steam_games_q1 %>% 
+    select(id, name, release_date, developer, original_price, release_date_category, all_reviews, all_reviews_category, all_reviews_number, popularity)
+)
 
-Now, if your data is tidy, untidy it! Then, tidy it back to it's original state.
+head(steam_games_mda2_final) %>% 
+  knitr::kable(format = "markdown")
+```
 
-If your data is untidy, then tidy it! Then, untidy it back to it's original state.
-
-Be sure to explain your reasoning for this task. Show us the "before" and "after".
-
-<!--------------------------- Start your work below --------------------------->
-
-
-<!----------------------------------------------------------------------------->
-
-### 2.3 (5 points)
-
-Now, you should be more familiar with your data, and also have made progress in answering your research questions. Based on your interest, and your analyses, pick 2 of the 4 research questions to continue your analysis in milestone 3, and explain your decision. 
-
-Try to choose a version of your data that you think will be appropriate to answer these 2 questions in milestone 3. Use between 4 and 8 functions that we've covered so far (i.e. by filtering, cleaning, tidy'ing, dropping irrelvant columns, etc.). 
-
-<!--------------------------- Start your work below --------------------------->
-
-
-<!----------------------------------------------------------------------------->
-
-*When you are done, knit an `md` file. This is what we will mark! Make sure to open it and check that everything has knitted correctly before submitting your tagged release.*
 
 ### Attribution
 
-Thanks to Victor Yuan for mostly putting this together. 
+Thanks to Victor Yuan for mostly putting the instruction document together. 
