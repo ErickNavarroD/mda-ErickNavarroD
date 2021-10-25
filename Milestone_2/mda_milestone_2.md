@@ -15,6 +15,7 @@ library(knitr)
 library(scales)
 library(forcats)
 library(ggridges)
+library(here)
 ```
 
 # Task 1: Process and summarize the data (15 points)
@@ -1184,6 +1185,12 @@ head(steam_games_mda2_final) %>%
 </tr>
 </tbody>
 </table>
+
+Finally, I saved the final dataset so that it is ready for use in the following milestone.
+
+``` r
+saveRDS(steam_games_mda2_final, file = here("Milestone_2","steam_games_mda2_final"))
+```
 
 ### Attribution
 

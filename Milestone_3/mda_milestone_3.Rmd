@@ -23,6 +23,12 @@ As a first step, I loaded the packages that I was going to use throughout this m
 library(datateachr) 
 library(tidyverse)
 library(lubridate)
+library(here)
+```
+
+
+```{r}
+
 ```
 
 ## Exercise 1: Special data types
