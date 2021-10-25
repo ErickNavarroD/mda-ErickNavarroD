@@ -1,0 +1,44 @@
+---
+title: "Mini Data Analysis Milestone 3"
+author: "Erick Navarro"
+date: "17/10/2021"
+output: github_document
+---
+
+## Introduction
+In the previous milestones I explored the datasets contained in the `datateachr` package and, at the end of the milestone 1, I chose to work with the `steam_games()` dataset. 
+
+In milestone 2, I summarized some variables contained in that dataset, and formulated two final research questions to focus on, which are the following: 
+
+1. *Do recent released games have better reviews than the older ones?*
+2. *Are the most popular games the ones with the best overall review?*
+
+This is the last milestone of the Mini Data Analysis project. Its objective is to manipulate special data types in R, such as factors and/or dates and times, fitting a model object to your data, and reading and writing data as separate files. The tasks presented here are intended to sharpen some of the results I obtained in the previous stages of the project, in order to reach a deeper conclusions of my research questions. 
+
+
+## Setup
+As a first step, I loaded the packages that I was going to use throughout this milestone
+
+```{r, message=FALSE}
+library(datateachr) 
+library(tidyverse)
+library(lubridate)
+```
+
+## Exercise 1: Special data types
+For this exercise, I decided to complete the following tasks: 
+
+1. Produce a new plot that groups some factor levels together into an “other” category (or something similar), using the forcats package (3 points). Then, in a sentence or two, briefly explain why you chose this grouping (1 point here for demonstrating understanding of the grouping, and 1 point for demonstrating some justification for the grouping, which could be subtle or speculative.)
+2. If your data has some sort of time-based column like a date (but something more granular than just a year):
+  - Make a new column that uses a function from the lubridate or tsibble package to modify your original time-based column. (3 points)
+    - Note that you might first have to make a time-based column using a function like ymd(), but this doesn’t count.
+    - Examples of something you might do here: extract the day of the year from a date, or extract the weekday, or let 24 hours elapse on your dates.
+  - Then, in a sentence or two, explain how your new column might be useful in exploring a research question. (1 point for demonstrating understanding of the function you used, and 1 point for your justification, which could be subtle or speculative).
+    - For example, you could say something like “Investigating the day of the week might be insightful because penguins don’t work on weekends, and so may respond differently”.
+
+
+### Task 1. 
+
+### Task 2
+
+## Exercise 2: Modelling
