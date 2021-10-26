@@ -1,7 +1,7 @@
 ---
 title: "Mini Data Analysis Milestone 3"
 author: "Erick Navarro"
-date: "17/10/2021"
+date: "26/10/2021"
 output: github_document
 ---
 
@@ -24,6 +24,7 @@ library(datateachr)
 library(tidyverse)
 library(lubridate)
 library(here)
+library(broom)
 steam_games_m3 = readRDS(here("Milestone_2", "steam_games_mda2_final"))
 ```
 
@@ -152,5 +153,80 @@ task_1.2 %>%
 ```
 
 
-
 ## Exercise 2: Modelling
+For this exercise, I picked the **research question** *Are the most popular games the ones with the best overall review?*, where the *variable of interest** is game popularity. 
+
+## 2.1 Fit a model (5 points)
+For this research question, I decided to test the mean game popularity across all of the different categories using ANOVA.  
+
+```{r}
+anova_res = (steam_games_m3 %>% 
+               filter(!is.na(popularity),
+                      all_reviews_category %in% (steam_games_m3$all_reviews_category %>% 
+                                      table() %>% 
+                                      names())[1:9]) %>%#Remove the games that did not have enough reviews to have an overall review (discussed in Milestone 2 Q1 - Extract categories)
+               droplevels() %>% 
+               aov(formula = popularity ~ all_reviews_category, data = .)
+               )
+
+tidy(anova_res) %>% knitr::kable(format = "markdown")
+```
+
+
+## 2.2 Producing something relevant(5 points)
+After doing the statistical test, I chose to display the p-value, which is a relevant statistical result from the ANOVA. 
+```{r}
+anova_res %>% 
+  broom::tidy() %>% 
+  filter(term == "all_reviews_category") %>% 
+  pull(p.value)
+```
+
+
+# Exercise 3: Reading and writing data
+
+## 3.1 (5 points)
+For this task, I had to take a summary table produced in Milestone 2 (exercise 1.2), and write it as a csv file in the `output` folder. 
+
+I chose to save the summary table of question 3 (*Are the most popular games the ones with the best overall review?*), which is the one I chose at the end to conduct the statistical test. 
+
+```{r}
+summ_table_rev_pop = (steam_games_m3 %>% 
+  filter(!is.na(popularity), #Remove the games that have NA or NaN in the number of reviews column
+         all_reviews_category %in% (steam_games_m3$all_reviews_category %>% 
+                                      table() %>% 
+                                      names())[1:9]) %>% #Remove the games that did not have enough reviews to have an overall review (discussed in Q1 - Extract categories)
+  group_by(all_reviews_category) %>% 
+  summarise(mean_pop = mean(popularity), #Compute the summary statistics
+            std_pop = sd(popularity),
+            median_pop = median(popularity),
+            min_pop = min(popularity),
+            max_pop = max(popularity)))
+
+summ_table_rev_pop%>% 
+  knitr::kable(format = "markdown")
+```
+
+After producing the table, I saved it as a .csv file. 
+
+```{r}
+write_csv(summ_table_rev_pop, file = here::here("output","summary_reviews_popularity.csv"))
+```
+
+## 3.2 (5 points)
+For this task, I had to write my model object obtained from Exercise 2 to an RDS file, and load it again.
+
+### Save the model
+```{r}
+saveRDS(object = anova_res, file = here::here("output","anova_results"))
+```
+
+### Reload the model
+
+```{r}
+anova_res_reloaded = readRDS(here::here("output","anova_results"))
+
+anova_res_reloaded %>% 
+  tidy() %>% 
+  knitr::kable(format = "markdown") #Check that it was reloaded correctly
+```

@@ -1,7 +1,7 @@
 Mini Data Analysis Milestone 3
 ================
 Erick Navarro
-17/10/2021
+26/10/2021
 
 ## Introduction
 
@@ -23,6 +23,7 @@ library(datateachr)
 library(tidyverse)
 library(lubridate)
 library(here)
+library(broom)
 steam_games_m3 = readRDS(here("Milestone_2", "steam_games_mda2_final"))
 ```
 
@@ -294,3 +295,108 @@ task_1.2 %>%
 ![](mda_milestone_3_files/figure-markdown_github/unnamed-chunk-8-1.png)
 
 ## Exercise 2: Modelling
+
+For this exercise, I picked the **research question** *Are the most popular games the ones with the best overall review?*, where the \*variable of interest\*\* is game popularity.
+
+## 2.1 Fit a model (5 points)
+
+For this research question, I decided to test the mean game popularity across all of the different categories using ANOVA.
+
+``` r
+anova_res = (steam_games_m3 %>% 
+               filter(!is.na(popularity),
+                      all_reviews_category %in% (steam_games_m3$all_reviews_category %>% 
+                                      table() %>% 
+                                      names())[1:9]) %>%#Remove the games that did not have enough reviews to have an overall review (discussed in Milestone 2 Q1 - Extract categories)
+               droplevels() %>% 
+               aov(formula = popularity ~ all_reviews_category, data = .)
+               )
+
+tidy(anova_res) %>% knitr::kable(format = "markdown")
+```
+
+| term                   |     df|         sumsq|      meansq|  statistic|  p.value|
+|:-----------------------|------:|-------------:|-----------:|----------:|--------:|
+| all\_reviews\_category |      8|  5.643930e+10|  7054912357|   54.20005|        0|
+| Residuals              |  17352|  2.258611e+12|   130164323|         NA|       NA|
+
+## 2.2 Producing something relevant(5 points)
+
+After doing the statistical test, I chose to display the p-value, which is a relevant statistical result from the ANOVA.
+
+``` r
+anova_res %>% 
+  broom::tidy() %>% 
+  filter(term == "all_reviews_category") %>% 
+  pull(p.value)
+```
+
+    ## [1] 1.607791e-87
+
+# Exercise 3: Reading and writing data
+
+## 3.1 (5 points)
+
+For this task, I had to take a summary table produced in Milestone 2 (exercise 1.2), and write it as a csv file in the `output` folder.
+
+I chose to save the summary table of question 3 (*Are the most popular games the ones with the best overall review?*), which is the one I chose at the end to conduct the statistical test.
+
+``` r
+summ_table_rev_pop = (steam_games_m3 %>% 
+  filter(!is.na(popularity), #Remove the games that have NA or NaN in the number of reviews column
+         all_reviews_category %in% (steam_games_m3$all_reviews_category %>% 
+                                      table() %>% 
+                                      names())[1:9]) %>% #Remove the games that did not have enough reviews to have an overall review (discussed in Q1 - Extract categories)
+  group_by(all_reviews_category) %>% 
+  summarise(mean_pop = mean(popularity), #Compute the summary statistics
+            std_pop = sd(popularity),
+            median_pop = median(popularity),
+            min_pop = min(popularity),
+            max_pop = max(popularity)))
+
+summ_table_rev_pop%>% 
+  knitr::kable(format = "markdown")
+```
+
+| all\_reviews\_category  |    mean\_pop|     std\_pop|  median\_pop|  min\_pop|  max\_pop|
+|:------------------------|------------:|------------:|------------:|---------:|---------:|
+| Overwhelmingly Positive |  12966.71340|  31030.43172|         2413|       500|    310394|
+| Very Positive           |   2319.68437|  13665.27086|          279|        50|    553458|
+| Positive                |     23.11771|     10.91703|           20|        10|        49|
+| Mostly Positive         |   1112.16490|   8761.78135|           82|        10|    407706|
+| Mixed                   |    846.76795|  13464.48441|           49|        10|    836608|
+| Mostly Negative         |    232.24297|   1164.27441|           31|        10|     22589|
+| Negative                |     19.33333|     10.12607|           15|        10|        49|
+| Very Negative           |    148.02703|    111.80476|          107|        51|       483|
+| Overwhelmingly Negative |   1426.85714|    925.46915|         1096|       509|      3057|
+
+After producing the table, I saved it as a .csv file.
+
+``` r
+write_csv(summ_table_rev_pop, file = here::here("output","summary_reviews_popularity.csv"))
+```
+
+## 3.2 (5 points)
+
+For this task, I had to write my model object obtained from Exercise 2 to an RDS file, and load it again.
+
+### Save the model
+
+``` r
+saveRDS(object = anova_res, file = here::here("output","anova_results"))
+```
+
+### Reload the model
+
+``` r
+anova_res_reloaded = readRDS(here::here("output","anova_results"))
+
+anova_res_reloaded %>% 
+  tidy() %>% 
+  knitr::kable(format = "markdown") #Check that it was reloaded correctly
+```
+
+| term                   |     df|         sumsq|      meansq|  statistic|  p.value|
+|:-----------------------|------:|-------------:|-----------:|----------:|--------:|
+| all\_reviews\_category |      8|  5.643930e+10|  7054912357|   54.20005|        0|
+| Residuals              |  17352|  2.258611e+12|   130164323|         NA|       NA|
