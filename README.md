@@ -1,5 +1,5 @@
 # Mini Data Analysis Project
-This project is part of the [STAT545A course](https://stat545.stat.ubc.ca); its goal is to provide some practical experience in a self-guided mini data analysis, using an almost real dataset.
+This project is part of the [STAT545A course](https://stat545.stat.ubc.ca) from UBC; its goal is to provide some practical experience in a self-guided mini data analysis, using an almost real dataset.
 
 It is divided in three stages (called milestones); each one of them is intended to guide the students through the exploration of the dataset, formulation and refinement of potential research questions, as well as answering them using statistical methods. 
 
