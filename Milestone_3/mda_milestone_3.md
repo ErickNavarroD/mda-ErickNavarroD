@@ -383,13 +383,13 @@ For this task, I had to write my model object obtained from Exercise 2 to an RDS
 ### Save the model
 
 ``` r
-saveRDS(object = anova_res, file = here::here("output","anova_results"))
+saveRDS(object = anova_res, file = here::here("output","anova_results.rds"))
 ```
 
 ### Reload the model
 
 ``` r
-anova_res_reloaded = readRDS(here::here("output","anova_results"))
+anova_res_reloaded = readRDS(here::here("output","anova_results.rds"))
 
 anova_res_reloaded %>% 
   tidy() %>% 
